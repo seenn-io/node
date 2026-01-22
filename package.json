@@ -30,6 +30,8 @@
     "ulid": "^2.3.0"
   },
   "devDependencies": {
+    "@types/node": "^25.0.10",
+    "typescript": "^5.9.3",
     "vitest": "^2.1.0"
   },
   "keywords": [

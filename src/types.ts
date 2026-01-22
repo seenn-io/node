@@ -10,14 +10,18 @@ export interface StartJobParams {
   userId: string;
   /** Human-readable title for the job */
   title: string;
+  /** Optional version for ETA tracking (e.g., '1.0', '2.1.0') */
+  version?: string;
   /** Optional metadata (max 10KB) */
   metadata?: Record<string, unknown>;
   /** Optional initial queue information */
   queue?: QueueInfo;
   /** Optional initial stage information */
   stage?: StageInfo;
-  /** Optional estimated completion time (ISO 8601) */
+  /** Optional estimated completion time (ISO 8601) - overrides auto ETA */
   estimatedCompletionAt?: string;
+  /** Optional estimated duration in ms - overrides auto ETA */
+  estimatedDuration?: number;
   /** Optional TTL in seconds (default: 30 days) */
   ttlSeconds?: number;
   /** Parent job ID (for child jobs) */
@@ -199,6 +203,8 @@ export interface JobResponse {
   userId: string;
   jobType: string;
   title: string;
+  /** Job version for ETA tracking */
+  version?: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
   progress: number;
   message?: string;
@@ -207,9 +213,16 @@ export interface JobResponse {
   result?: JobResult;
   error?: JobError;
   metadata?: Record<string, unknown>;
+  /** Estimated completion time (ISO 8601) */
   estimatedCompletionAt?: string;
+  /** ETA confidence score (0.0 - 1.0) */
+  etaConfidence?: number;
+  /** Number of historical jobs used to calculate ETA */
+  etaBasedOn?: number;
   createdAt: string;
   updatedAt: string;
+  /** When the job actually started running */
+  startedAt?: string;
   completedAt?: string;
   /** Parent info (if this is a child job) */
   parent?: ParentInfo;
@@ -217,4 +230,40 @@ export interface JobResponse {
   children?: ChildrenStats;
   /** Child progress mode (if this is a parent job) */
   childProgressMode?: ChildProgressMode;
+}
+
+// ETA Types
+
+/** ETA statistics for a job type */
+export interface EtaStats {
+  /** Job type identifier */
+  jobType: string;
+  /** Version (or 'default') */
+  version: string;
+  /** Number of completed jobs in statistics */
+  count: number;
+  /** Average duration in milliseconds */
+  avgDuration: number;
+  /** Median duration (50th percentile) in milliseconds */
+  p50Duration: number;
+  /** 95th percentile duration in milliseconds */
+  p95Duration: number;
+  /** Minimum recorded duration */
+  minDuration: number;
+  /** Maximum recorded duration */
+  maxDuration: number;
+  /** Confidence score for ETA predictions (0.0 - 1.0) */
+  confidence: number;
+  /** Last time stats were updated */
+  lastUpdated: string;
+}
+
+/** Default ETA configuration for job types */
+export interface DefaultEtaConfig {
+  /** Job type identifier */
+  jobType: string;
+  /** Default duration in milliseconds (used when no history) */
+  defaultDuration: number;
+  /** Optional version */
+  version?: string;
 }

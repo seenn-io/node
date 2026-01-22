@@ -21,6 +21,7 @@ export interface JobData {
   userId: string;
   jobType: string;
   title: string;
+  version?: string;
   status: JobStatus;
   progress: number;
   message?: string;
@@ -30,8 +31,11 @@ export interface JobData {
   error?: JobError;
   metadata?: Record<string, unknown>;
   estimatedCompletionAt?: string;
+  etaConfidence?: number;
+  etaBasedOn?: number;
   createdAt: Date;
   updatedAt: Date;
+  startedAt?: Date;
   completedAt?: Date;
   // Parent-child fields
   parent?: ParentInfo;
@@ -66,6 +70,7 @@ export class Job implements JobData {
   readonly userId: string;
   readonly jobType: string;
   readonly title: string;
+  readonly version?: string;
   status: JobStatus;
   progress: number;
   message?: string;
@@ -75,8 +80,11 @@ export class Job implements JobData {
   error?: JobError;
   metadata?: Record<string, unknown>;
   estimatedCompletionAt?: string;
+  etaConfidence?: number;
+  etaBasedOn?: number;
   readonly createdAt: Date;
   updatedAt: Date;
+  startedAt?: Date;
   completedAt?: Date;
   // Parent-child fields
   parent?: ParentInfo;
@@ -91,6 +99,7 @@ export class Job implements JobData {
     this.userId = data.userId;
     this.jobType = data.jobType;
     this.title = data.title;
+    this.version = data.version;
     this.status = data.status;
     this.progress = data.progress;
     this.message = data.message;
@@ -100,8 +109,11 @@ export class Job implements JobData {
     this.error = data.error;
     this.metadata = data.metadata;
     this.estimatedCompletionAt = data.estimatedCompletionAt;
+    this.etaConfidence = data.etaConfidence;
+    this.etaBasedOn = data.etaBasedOn;
     this.createdAt = new Date(data.createdAt);
     this.updatedAt = new Date(data.updatedAt);
+    this.startedAt = data.startedAt ? new Date(data.startedAt) : undefined;
     this.completedAt = data.completedAt ? new Date(data.completedAt) : undefined;
     // Parent-child fields
     this.parent = data.parent;
@@ -204,6 +216,23 @@ export class Job implements JobData {
   }
 
   /**
+   * Get remaining time until ETA in milliseconds (null if no ETA)
+   */
+  get etaRemaining(): number | null {
+    if (!this.estimatedCompletionAt) return null;
+    const eta = new Date(this.estimatedCompletionAt).getTime();
+    return Math.max(0, eta - Date.now());
+  }
+
+  /**
+   * Check if job is past its ETA but still running
+   */
+  get isPastEta(): boolean {
+    if (!this.estimatedCompletionAt || this.isTerminal) return false;
+    return new Date(this.estimatedCompletionAt).getTime() < Date.now();
+  }
+
+  /**
    * Get plain object representation
    */
   toJSON(): JobData {
@@ -213,6 +242,7 @@ export class Job implements JobData {
       userId: this.userId,
       jobType: this.jobType,
       title: this.title,
+      version: this.version,
       status: this.status,
       progress: this.progress,
       message: this.message,
@@ -222,8 +252,11 @@ export class Job implements JobData {
       error: this.error,
       metadata: this.metadata,
       estimatedCompletionAt: this.estimatedCompletionAt,
+      etaConfidence: this.etaConfidence,
+      etaBasedOn: this.etaBasedOn,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      startedAt: this.startedAt,
       completedAt: this.completedAt,
       parent: this.parent,
       children: this.children,
@@ -241,7 +274,10 @@ export class Job implements JobData {
     this.error = response.error;
     this.metadata = response.metadata;
     this.estimatedCompletionAt = response.estimatedCompletionAt;
+    this.etaConfidence = response.etaConfidence;
+    this.etaBasedOn = response.etaBasedOn;
     this.updatedAt = new Date(response.updatedAt);
+    this.startedAt = response.startedAt ? new Date(response.startedAt) : undefined;
     this.completedAt = response.completedAt ? new Date(response.completedAt) : undefined;
     this.parent = response.parent;
     this.children = response.children;

@@ -24,6 +24,9 @@ export type {
   CreateChildParams,
   CreateBatchParams,
   ParentWithChildren,
+  // ETA types
+  EtaStats,
+  DefaultEtaConfig,
 } from './types.js';
 
 export { SeennError, RateLimitError, ValidationError, NotFoundError } from './errors.js';

@@ -8,6 +8,8 @@ import type {
   CreateBatchParams,
   ParentWithChildren,
   ChildJobSummary,
+  EtaStats,
+  DefaultEtaConfig,
 } from './types.js';
 
 export interface SeennConfig {
@@ -166,6 +168,64 @@ export class SeennClient {
         await parent.refresh();
 
         return { parent, children };
+      },
+    };
+  }
+
+  /**
+   * ETA (Estimated Time of Arrival) resource
+   */
+  get eta() {
+    return {
+      /**
+       * Get ETA statistics for a job type
+       */
+      getStats: async (jobType: string, version?: string): Promise<EtaStats | null> => {
+        const params = new URLSearchParams({ jobType });
+        if (version) params.set('version', version);
+
+        try {
+          const response = await this.http.get<EtaStats>(`/v1/eta/stats?${params}`);
+          return response;
+        } catch (error: unknown) {
+          // Return null if no stats exist yet
+          if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
+            return null;
+          }
+          throw error;
+        }
+      },
+
+      /**
+       * List all ETA statistics for the app
+       */
+      list: async (): Promise<EtaStats[]> => {
+        const response = await this.http.get<{ stats: EtaStats[] }>('/v1/eta/stats');
+        return response.stats;
+      },
+
+      /**
+       * Set default ETA for a job type (used when no history exists)
+       */
+      setDefault: async (config: DefaultEtaConfig): Promise<void> => {
+        await this.http.post('/v1/eta/defaults', config);
+      },
+
+      /**
+       * Get default ETA configurations
+       */
+      getDefaults: async (): Promise<DefaultEtaConfig[]> => {
+        const response = await this.http.get<{ defaults: DefaultEtaConfig[] }>('/v1/eta/defaults');
+        return response.defaults;
+      },
+
+      /**
+       * Reset ETA statistics for a job type (admin use)
+       */
+      reset: async (jobType: string, version?: string): Promise<void> => {
+        const params = new URLSearchParams({ jobType });
+        if (version) params.set('version', version);
+        await this.http.post(`/v1/eta/reset?${params}`, {});
       },
     };
   }
