@@ -1,0 +1,64 @@
+{
+  "name": "@seenn/node",
+  "version": "0.1.0",
+  "description": "Seenn Node.js Backend SDK - Open source job state transport for real-time progress tracking",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0"
+  },
+  "keywords": [
+    "seenn",
+    "job",
+    "progress",
+    "realtime",
+    "push",
+    "notification",
+    "live-activity",
+    "sse",
+    "backend",
+    "api",
+    "open-source"
+  ],
+  "author": "Seenn <hello@seenn.io>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seenn-io/node.git"
+  },
+  "homepage": "https://seenn.io",
+  "bugs": {
+    "url": "https://github.com/seenn-io/node/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
