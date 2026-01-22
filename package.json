@@ -1,6 +1,6 @@
 {
   "name": "@seenn/node",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Seenn Node.js Backend SDK - Open source job state transport for real-time progress tracking",
   "type": "module",
   "main": "dist/index.js",
@@ -51,7 +51,7 @@
     "type": "git",
     "url": "https://github.com/seenn-io/node.git"
   },
-  "homepage": "https://seenn.io",
+  "homepage": "https://github.com/seenn-io/node#readme",
   "bugs": {
     "url": "https://github.com/seenn-io/node/issues"
   },
