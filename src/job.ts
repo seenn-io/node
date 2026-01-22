@@ -8,6 +8,9 @@ import type {
   StageInfo,
   JobResult,
   JobError,
+  ParentInfo,
+  ChildrenStats,
+  ChildProgressMode,
 } from './types.js';
 
 export type JobStatus = 'pending' | 'running' | 'completed' | 'failed';
@@ -30,6 +33,10 @@ export interface JobData {
   createdAt: Date;
   updatedAt: Date;
   completedAt?: Date;
+  // Parent-child fields
+  parent?: ParentInfo;
+  children?: ChildrenStats;
+  childProgressMode?: ChildProgressMode;
 }
 
 export interface ProgressOptions {
@@ -71,6 +78,10 @@ export class Job implements JobData {
   readonly createdAt: Date;
   updatedAt: Date;
   completedAt?: Date;
+  // Parent-child fields
+  parent?: ParentInfo;
+  children?: ChildrenStats;
+  childProgressMode?: ChildProgressMode;
 
   private readonly http: HttpClient;
 
@@ -92,6 +103,10 @@ export class Job implements JobData {
     this.createdAt = new Date(data.createdAt);
     this.updatedAt = new Date(data.updatedAt);
     this.completedAt = data.completedAt ? new Date(data.completedAt) : undefined;
+    // Parent-child fields
+    this.parent = data.parent;
+    this.children = data.children;
+    this.childProgressMode = data.childProgressMode;
 
     this.http = http;
   }
@@ -161,6 +176,34 @@ export class Job implements JobData {
   }
 
   /**
+   * Check if this is a parent job (has children)
+   */
+  get isParent(): boolean {
+    return this.children !== undefined;
+  }
+
+  /**
+   * Check if this is a child job (has a parent)
+   */
+  get isChild(): boolean {
+    return this.parent !== undefined;
+  }
+
+  /**
+   * Get child progress summary (only for parent jobs)
+   */
+  get childProgress(): { completed: number; failed: number; running: number; pending: number; total: number } | null {
+    if (!this.children) return null;
+    return {
+      completed: this.children.completed,
+      failed: this.children.failed,
+      running: this.children.running,
+      pending: this.children.pending,
+      total: this.children.total,
+    };
+  }
+
+  /**
    * Get plain object representation
    */
   toJSON(): JobData {
@@ -182,6 +225,9 @@ export class Job implements JobData {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       completedAt: this.completedAt,
+      parent: this.parent,
+      children: this.children,
+      childProgressMode: this.childProgressMode,
     };
   }
 
@@ -197,5 +243,8 @@ export class Job implements JobData {
     this.estimatedCompletionAt = response.estimatedCompletionAt;
     this.updatedAt = new Date(response.updatedAt);
     this.completedAt = response.completedAt ? new Date(response.completedAt) : undefined;
+    this.parent = response.parent;
+    this.children = response.children;
+    this.childProgressMode = response.childProgressMode;
   }
 }

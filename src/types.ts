@@ -1,3 +1,6 @@
+// Child progress calculation mode
+export type ChildProgressMode = 'average' | 'weighted' | 'sequential';
+
 // Job Parameters
 
 export interface StartJobParams {
@@ -17,6 +20,14 @@ export interface StartJobParams {
   estimatedCompletionAt?: string;
   /** Optional TTL in seconds (default: 30 days) */
   ttlSeconds?: number;
+  /** Parent job ID (for child jobs) */
+  parentJobId?: string;
+  /** 0-based index within parent (for child jobs) */
+  childIndex?: number;
+  /** Total number of children (for parent jobs) */
+  totalChildren?: number;
+  /** How to calculate parent progress from children (default: 'average') */
+  childProgressMode?: ChildProgressMode;
 }
 
 export interface ProgressParams {
@@ -88,6 +99,98 @@ export interface JobError {
   details?: Record<string, unknown>;
 }
 
+// Parent-child types
+
+/** Summary of a child job */
+export interface ChildJobSummary {
+  id: string;
+  childIndex: number;
+  title: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  progress: number;
+  message?: string;
+  result?: JobResult;
+  error?: JobError;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+}
+
+/** Parent info included in child job responses */
+export interface ParentInfo {
+  parentJobId: string;
+  childIndex: number;
+}
+
+/** Children stats included in parent job responses */
+export interface ChildrenStats {
+  total: number;
+  completed: number;
+  failed: number;
+  running: number;
+  pending: number;
+}
+
+/** Parameters for creating a parent job */
+export interface CreateParentParams {
+  /** Unique job type identifier */
+  jobType: string;
+  /** User ID who owns this job */
+  userId: string;
+  /** Human-readable title for the parent job */
+  title: string;
+  /** Total number of children this parent will have */
+  childCount: number;
+  /** How to calculate parent progress from children (default: 'average') */
+  childProgressMode?: ChildProgressMode;
+  /** Optional metadata */
+  metadata?: Record<string, unknown>;
+  /** Optional TTL in seconds */
+  ttlSeconds?: number;
+}
+
+/** Parameters for creating a child job */
+export interface CreateChildParams {
+  /** Parent job ID */
+  parentJobId: string;
+  /** 0-based index within parent */
+  childIndex: number;
+  /** Unique job type identifier */
+  jobType: string;
+  /** User ID who owns this job */
+  userId: string;
+  /** Human-readable title for the child job */
+  title: string;
+  /** Optional metadata */
+  metadata?: Record<string, unknown>;
+  /** Optional TTL in seconds */
+  ttlSeconds?: number;
+}
+
+/** Parameters for creating a batch of jobs */
+export interface CreateBatchParams {
+  /** Unique job type identifier for all jobs */
+  jobType: string;
+  /** User ID who owns these jobs */
+  userId: string;
+  /** Human-readable title for the parent job */
+  parentTitle: string;
+  /** Titles for each child job */
+  childTitles: string[];
+  /** How to calculate parent progress from children (default: 'average') */
+  childProgressMode?: ChildProgressMode;
+  /** Optional metadata for parent job */
+  metadata?: Record<string, unknown>;
+  /** Optional TTL in seconds */
+  ttlSeconds?: number;
+}
+
+/** Parent job with all its children */
+export interface ParentWithChildren {
+  parent: JobResponse;
+  children: ChildJobSummary[];
+}
+
 // API Response Types
 
 export interface JobResponse {
@@ -108,4 +211,10 @@ export interface JobResponse {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  /** Parent info (if this is a child job) */
+  parent?: ParentInfo;
+  /** Children stats (if this is a parent job) */
+  children?: ChildrenStats;
+  /** Child progress mode (if this is a parent job) */
+  childProgressMode?: ChildProgressMode;
 }

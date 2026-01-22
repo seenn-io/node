@@ -1,6 +1,14 @@
 import { Job } from './job.js';
 import { HttpClient } from './http.js';
-import type { StartJobParams, JobResponse } from './types.js';
+import type {
+  StartJobParams,
+  JobResponse,
+  CreateParentParams,
+  CreateChildParams,
+  CreateBatchParams,
+  ParentWithChildren,
+  ChildJobSummary,
+} from './types.js';
 
 export interface SeennConfig {
   /** API key (sk_live_xxx or sk_test_xxx) */
@@ -77,6 +85,87 @@ export class SeennClient {
           jobs: response.jobs.map((j) => new Job(j, this.http)),
           nextCursor: response.nextCursor,
         };
+      },
+
+      /**
+       * Create a parent job (batch container)
+       */
+      createParent: async (params: CreateParentParams): Promise<Job> => {
+        const response = await this.http.post<JobResponse>('/v1/jobs', {
+          jobType: params.jobType,
+          userId: params.userId,
+          title: params.title,
+          totalChildren: params.childCount,
+          childProgressMode: params.childProgressMode,
+          metadata: params.metadata,
+          ttlSeconds: params.ttlSeconds,
+        });
+        return new Job(response, this.http);
+      },
+
+      /**
+       * Create a child job under a parent
+       */
+      createChild: async (params: CreateChildParams): Promise<Job> => {
+        const response = await this.http.post<JobResponse>('/v1/jobs', {
+          jobType: params.jobType,
+          userId: params.userId,
+          title: params.title,
+          parentJobId: params.parentJobId,
+          childIndex: params.childIndex,
+          metadata: params.metadata,
+          ttlSeconds: params.ttlSeconds,
+        });
+        return new Job(response, this.http);
+      },
+
+      /**
+       * Get a parent job with all its children
+       */
+      getWithChildren: async (parentJobId: string): Promise<{ parent: Job; children: ChildJobSummary[] }> => {
+        const response = await this.http.get<ParentWithChildren>(
+          `/v1/jobs/${parentJobId}/children`
+        );
+        return {
+          parent: new Job(response.parent, this.http),
+          children: response.children,
+        };
+      },
+
+      /**
+       * Create a batch of jobs (parent + children) in one go
+       * Returns the parent job and all child jobs
+       */
+      createBatch: async (params: CreateBatchParams): Promise<{ parent: Job; children: Job[] }> => {
+        // Create parent job first
+        const parent = await this.jobs.createParent({
+          jobType: params.jobType,
+          userId: params.userId,
+          title: params.parentTitle,
+          childCount: params.childTitles.length,
+          childProgressMode: params.childProgressMode,
+          metadata: params.metadata,
+          ttlSeconds: params.ttlSeconds,
+        });
+
+        // Create all children in parallel
+        const childPromises = params.childTitles.map((title, index) =>
+          this.jobs.createChild({
+            parentJobId: parent.id,
+            childIndex: index,
+            jobType: params.jobType,
+            userId: params.userId,
+            title,
+            ttlSeconds: params.ttlSeconds,
+          })
+        );
+
+        const children = await Promise.all(childPromises);
+
+        // Refresh parent to get updated counters
+        await parent.refresh();
+
+        return { parent, children };
       },
     };
   }

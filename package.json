@@ -1,6 +1,6 @@
 {
   "name": "@seenn/node",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Seenn Node.js Backend SDK - Open source job state transport for real-time progress tracking",
   "type": "module",
   "main": "dist/index.js",

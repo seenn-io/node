@@ -15,6 +15,15 @@ export type {
   StageInfo,
   JobResult,
   JobError,
+  // Parent-child types
+  ChildProgressMode,
+  ChildJobSummary,
+  ParentInfo,
+  ChildrenStats,
+  CreateParentParams,
+  CreateChildParams,
+  CreateBatchParams,
+  ParentWithChildren,
 } from './types.js';
 
 export { SeennError, RateLimitError, ValidationError, NotFoundError } from './errors.js';
