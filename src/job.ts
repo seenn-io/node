@@ -21,7 +21,7 @@ export interface JobData {
   userId: string;
   jobType: string;
   title: string;
-  version?: string;
+  workflowId?: string;
   status: JobStatus;
   progress: number;
   message?: string;
@@ -70,7 +70,7 @@ export class Job implements JobData {
   readonly userId: string;
   readonly jobType: string;
   readonly title: string;
-  readonly version?: string;
+  readonly workflowId?: string;
   status: JobStatus;
   progress: number;
   message?: string;
@@ -99,7 +99,7 @@ export class Job implements JobData {
     this.userId = data.userId;
     this.jobType = data.jobType;
     this.title = data.title;
-    this.version = data.version;
+    this.workflowId = data.workflowId;
     this.status = data.status;
     this.progress = data.progress;
     this.message = data.message;
@@ -242,7 +242,7 @@ export class Job implements JobData {
       userId: this.userId,
       jobType: this.jobType,
       title: this.title,
-      version: this.version,
+      workflowId: this.workflowId,
       status: this.status,
       progress: this.progress,
       message: this.message,

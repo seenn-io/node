@@ -9,7 +9,6 @@ import type {
   ParentWithChildren,
   ChildJobSummary,
   EtaStats,
-  DefaultEtaConfig,
 } from './types.js';
 
 export interface SeennConfig {
@@ -178,14 +177,11 @@ export class SeennClient {
   get eta() {
     return {
       /**
-       * Get ETA statistics for a job type
+       * Get ETA statistics for a specific etaKey (workflowId or jobType)
        */
-      getStats: async (jobType: string, version?: string): Promise<EtaStats | null> => {
-        const params = new URLSearchParams({ jobType });
-        if (version) params.set('version', version);
-
+      getStats: async (etaKey: string): Promise<EtaStats | null> => {
         try {
-          const response = await this.http.get<EtaStats>(`/v1/eta/stats?${params}`);
+          const response = await this.http.get<EtaStats>(`/v1/eta/${encodeURIComponent(etaKey)}`);
           return response;
         } catch (error: unknown) {
           // Return null if no stats exist yet
@@ -200,32 +196,15 @@ export class SeennClient {
        * List all ETA statistics for the app
        */
       list: async (): Promise<EtaStats[]> => {
-        const response = await this.http.get<{ stats: EtaStats[] }>('/v1/eta/stats');
+        const response = await this.http.get<{ stats: EtaStats[] }>('/v1/eta');
         return response.stats;
       },
 
       /**
-       * Set default ETA for a job type (used when no history exists)
+       * Reset ETA statistics for a specific etaKey (admin use)
        */
-      setDefault: async (config: DefaultEtaConfig): Promise<void> => {
-        await this.http.post('/v1/eta/defaults', config);
-      },
-
-      /**
-       * Get default ETA configurations
-       */
-      getDefaults: async (): Promise<DefaultEtaConfig[]> => {
-        const response = await this.http.get<{ defaults: DefaultEtaConfig[] }>('/v1/eta/defaults');
-        return response.defaults;
-      },
-
-      /**
-       * Reset ETA statistics for a job type (admin use)
-       */
-      reset: async (jobType: string, version?: string): Promise<void> => {
-        const params = new URLSearchParams({ jobType });
-        if (version) params.set('version', version);
-        await this.http.post(`/v1/eta/reset?${params}`, {});
+      reset: async (etaKey: string): Promise<void> => {
+        await this.http.delete(`/v1/eta/${encodeURIComponent(etaKey)}`);
       },
     };
   }

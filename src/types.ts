@@ -1,7 +1,38 @@
-// Child progress calculation mode
-export type ChildProgressMode = 'average' | 'weighted' | 'sequential';
+/**
+ * Seenn Node.js SDK Types
+ *
+ * Re-exports from @seenn/types (single source of truth)
+ * Plus Node.js SDK specific types
+ *
+ * @see https://www.npmjs.com/package/@seenn/types
+ */
 
-// Job Parameters
+// Re-export shared types from @seenn/types
+export type {
+  // Core Types
+  JobStatus,
+  ChildProgressMode,
+  StageInfo,
+  QueueInfo,
+  JobResult,
+  JobError,
+
+  // Parent-Child Types
+  ParentInfo,
+  ChildrenStats,
+  ChildJobSummary,
+
+  // ETA Types (basic)
+  EtaStats,
+} from '@seenn/types';
+
+// ============================================
+// Node.js SDK Specific Types
+// ============================================
+
+import type { StageInfo, QueueInfo, JobResult, JobError, ChildProgressMode, ParentInfo, ChildrenStats } from '@seenn/types';
+
+// Job Parameters (server-side)
 
 export interface StartJobParams {
   /** Unique job type identifier (e.g., 'video-generation', 'image-processing') */
@@ -10,8 +41,8 @@ export interface StartJobParams {
   userId: string;
   /** Human-readable title for the job */
   title: string;
-  /** Optional version for ETA tracking (e.g., '1.0', '2.1.0') */
-  version?: string;
+  /** Workflow ID for ETA tracking (default: jobType) */
+  workflowId?: string;
   /** Optional metadata (max 10KB) */
   metadata?: Record<string, unknown>;
   /** Optional initial queue information */
@@ -63,77 +94,7 @@ export interface FailParams {
   retryable?: boolean;
 }
 
-// Nested Types
-
-export interface QueueInfo {
-  /** Current position in queue (1-based) */
-  position: number;
-  /** Total items in queue */
-  total?: number;
-  /** Optional queue name/tier */
-  queueName?: string;
-}
-
-export interface StageInfo {
-  /** Current stage name */
-  name: string;
-  /** Current stage number (1-based) */
-  current: number;
-  /** Total number of stages */
-  total: number;
-  /** Optional stage description */
-  description?: string;
-}
-
-export interface JobResult {
-  /** Result type identifier */
-  type?: string;
-  /** Result URL (e.g., generated video URL) */
-  url?: string;
-  /** Additional result data */
-  data?: Record<string, unknown>;
-}
-
-export interface JobError {
-  /** Error code */
-  code: string;
-  /** Human-readable error message */
-  message: string;
-  /** Additional error details */
-  details?: Record<string, unknown>;
-}
-
-// Parent-child types
-
-/** Summary of a child job */
-export interface ChildJobSummary {
-  id: string;
-  childIndex: number;
-  title: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  progress: number;
-  message?: string;
-  result?: JobResult;
-  error?: JobError;
-  createdAt: string;
-  updatedAt: string;
-  completedAt?: string;
-}
-
-/** Parent info included in child job responses */
-export interface ParentInfo {
-  parentJobId: string;
-  childIndex: number;
-}
-
-/** Children stats included in parent job responses */
-export interface ChildrenStats {
-  total: number;
-  completed: number;
-  failed: number;
-  running: number;
-  pending: number;
-}
+// Parent-child specific types (server-side)
 
 /** Parameters for creating a parent job */
 export interface CreateParentParams {
@@ -189,13 +150,7 @@ export interface CreateBatchParams {
   ttlSeconds?: number;
 }
 
-/** Parent job with all its children */
-export interface ParentWithChildren {
-  parent: JobResponse;
-  children: ChildJobSummary[];
-}
-
-// API Response Types
+// API Response Types (server-side format)
 
 export interface JobResponse {
   id: string;
@@ -203,8 +158,8 @@ export interface JobResponse {
   userId: string;
   jobType: string;
   title: string;
-  /** Job version for ETA tracking */
-  version?: string;
+  /** Workflow ID for ETA tracking (default: jobType) */
+  workflowId?: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
   progress: number;
   message?: string;
@@ -232,14 +187,18 @@ export interface JobResponse {
   childProgressMode?: ChildProgressMode;
 }
 
-// ETA Types
+/** Parent job with all its children (server response) */
+export interface ParentWithChildren {
+  parent: JobResponse;
+  children: import('@seenn/types').ChildJobSummary[];
+}
 
-/** ETA statistics for a job type */
-export interface EtaStats {
-  /** Job type identifier */
-  jobType: string;
-  /** Version (or 'default') */
-  version: string;
+// ETA Types (server-side extended)
+
+/** Extended ETA statistics for a workflow */
+export interface EtaStatsExtended {
+  /** ETA key (workflowId or jobType) */
+  etaKey: string;
   /** Number of completed jobs in statistics */
   count: number;
   /** Average duration in milliseconds */
@@ -258,12 +217,10 @@ export interface EtaStats {
   lastUpdated: string;
 }
 
-/** Default ETA configuration for job types */
+/** Default ETA configuration */
 export interface DefaultEtaConfig {
-  /** Job type identifier */
-  jobType: string;
+  /** ETA key (workflowId or jobType) */
+  etaKey: string;
   /** Default duration in milliseconds (used when no history) */
   defaultDuration: number;
-  /** Optional version */
-  version?: string;
 }
