@@ -43,7 +43,7 @@
     "push",
     "notification",
     "live-activity",
-    "sse",
+    "polling",
     "backend",
     "api",
     "open-source"
