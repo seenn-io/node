@@ -51,9 +51,31 @@ export interface ProgressOptions {
   metadata?: Record<string, unknown>;
 }
 
+/** CTA button configuration for Live Activity completion */
+export interface LiveActivityCTAButton {
+  /** Button text */
+  text: string;
+  /** Deep link URL to open when tapped */
+  deepLink: string;
+  /** Button style preset */
+  style?: 'primary' | 'secondary' | 'outline';
+  /** Custom background color (hex) */
+  backgroundColor?: string;
+  /** Custom text color (hex) */
+  textColor?: string;
+}
+
+/** Live Activity options for job completion */
+export interface LiveActivityOptions {
+  /** CTA button to show on completion */
+  ctaButton?: LiveActivityCTAButton;
+}
+
 export interface CompleteOptions {
   result?: JobResult;
   message?: string;
+  /** Live Activity customization (iOS) */
+  liveActivity?: LiveActivityOptions;
 }
 
 export interface FailOptions {
@@ -133,7 +155,7 @@ export class Job implements JobData {
     };
 
     const response = await this.http.post<JobResponse>(
-      `/v1/jobs/${this.id}/progress`,
+      `/jobs/${this.id}/progress`,
       params
     );
 
@@ -148,7 +170,7 @@ export class Job implements JobData {
     const params: CompleteParams = options || {};
 
     const response = await this.http.post<JobResponse>(
-      `/v1/jobs/${this.id}/complete`,
+      `/jobs/${this.id}/complete`,
       params
     );
 
@@ -163,7 +185,7 @@ export class Job implements JobData {
     const params: FailParams = options;
 
     const response = await this.http.post<JobResponse>(
-      `/v1/jobs/${this.id}/fail`,
+      `/jobs/${this.id}/fail`,
       params
     );
 
@@ -175,7 +197,7 @@ export class Job implements JobData {
    * Refresh job data from server
    */
   async refresh(): Promise<this> {
-    const response = await this.http.get<JobResponse>(`/v1/jobs/${this.id}`);
+    const response = await this.http.get<JobResponse>(`/jobs/${this.id}`);
     this.updateFromResponse(response);
     return this;
   }

@@ -16,6 +16,8 @@ export interface SeennConfig {
   apiKey: string;
   /** Base URL (default: https://api.seenn.io) */
   baseUrl?: string;
+  /** API base path prefix (default: '/v1'). Self-hosted backends can use custom paths. */
+  basePath?: string;
   /** Request timeout in ms (default: 30000) */
   timeout?: number;
   /** Max retry attempts (default: 3) */
@@ -33,13 +35,17 @@ export class SeennClient {
       throw new Error('apiKey is required');
     }
 
-    if (!config.apiKey.startsWith('sk_')) {
+    // Validate API key format (skip for self-hosted backends)
+    const isSelfHosted = config.baseUrl && config.baseUrl !== 'https://api.seenn.io';
+
+    if (!isSelfHosted && !config.apiKey.startsWith('sk_')) {
       throw new Error('apiKey must start with sk_live_ or sk_test_');
     }
 
     this.config = {
       apiKey: config.apiKey,
       baseUrl: config.baseUrl || 'https://api.seenn.io',
+      basePath: config.basePath || '/v1',
       timeout: config.timeout || 30000,
       maxRetries: config.maxRetries || 3,
       debug: config.debug || false,
@@ -57,7 +63,7 @@ export class SeennClient {
        * Start a new job
        */
       start: async (params: StartJobParams): Promise<Job> => {
-        const response = await this.http.post<JobResponse>('/v1/jobs', params);
+        const response = await this.http.post<JobResponse>('/jobs', params);
         return new Job(response, this.http);
       },
 
@@ -65,7 +71,7 @@ export class SeennClient {
        * Get a job by ID
        */
       get: async (jobId: string): Promise<Job> => {
-        const response = await this.http.get<JobResponse>(`/v1/jobs/${jobId}`);
+        const response = await this.http.get<JobResponse>(`/jobs/${jobId}`);
         return new Job(response, this.http);
       },
 
@@ -80,7 +86,7 @@ export class SeennClient {
         const response = await this.http.get<{
           jobs: JobResponse[];
           nextCursor?: string;
-        }>(`/v1/jobs?${params}`);
+        }>(`/jobs?${params}`);
 
         return {
           jobs: response.jobs.map((j) => new Job(j, this.http)),
@@ -92,7 +98,7 @@ export class SeennClient {
        * Create a parent job (batch container)
        */
       createParent: async (params: CreateParentParams): Promise<Job> => {
-        const response = await this.http.post<JobResponse>('/v1/jobs', {
+        const response = await this.http.post<JobResponse>('/jobs', {
           jobType: params.jobType,
           userId: params.userId,
           title: params.title,
@@ -108,7 +114,7 @@ export class SeennClient {
        * Create a child job under a parent
        */
       createChild: async (params: CreateChildParams): Promise<Job> => {
-        const response = await this.http.post<JobResponse>('/v1/jobs', {
+        const response = await this.http.post<JobResponse>('/jobs', {
           jobType: params.jobType,
           userId: params.userId,
           title: params.title,
@@ -125,7 +131,7 @@ export class SeennClient {
        */
       getWithChildren: async (parentJobId: string): Promise<{ parent: Job; children: ChildJobSummary[] }> => {
         const response = await this.http.get<ParentWithChildren>(
-          `/v1/jobs/${parentJobId}/children`
+          `/jobs/${parentJobId}/children`
         );
         return {
           parent: new Job(response.parent, this.http),
@@ -181,7 +187,7 @@ export class SeennClient {
        */
       getStats: async (etaKey: string): Promise<EtaStats | null> => {
         try {
-          const response = await this.http.get<EtaStats>(`/v1/eta/${encodeURIComponent(etaKey)}`);
+          const response = await this.http.get<EtaStats>(`/eta/${encodeURIComponent(etaKey)}`);
           return response;
         } catch (error: unknown) {
           // Return null if no stats exist yet
@@ -196,7 +202,7 @@ export class SeennClient {
        * List all ETA statistics for the app
        */
       list: async (): Promise<EtaStats[]> => {
-        const response = await this.http.get<{ stats: EtaStats[] }>('/v1/eta');
+        const response = await this.http.get<{ stats: EtaStats[] }>('/eta');
         return response.stats;
       },
 
@@ -204,7 +210,7 @@ export class SeennClient {
        * Reset ETA statistics for a specific etaKey (admin use)
        */
       reset: async (etaKey: string): Promise<void> => {
-        await this.http.delete(`/v1/eta/${encodeURIComponent(etaKey)}`);
+        await this.http.delete(`/eta/${encodeURIComponent(etaKey)}`);
       },
     };
   }

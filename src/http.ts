@@ -47,7 +47,7 @@ export class HttpClient {
 
   private async request<T>(options: RequestOptions): Promise<T> {
     const { method, path, body } = options;
-    const url = `${this.config.baseUrl}${path}`;
+    const url = `${this.config.baseUrl}${this.config.basePath}${path}`;
 
     const headers: Record<string, string> = {
       'Authorization': `Bearer ${this.config.apiKey}`,

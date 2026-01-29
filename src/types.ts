@@ -24,6 +24,9 @@ export type {
 
   // ETA Types (basic)
   EtaStats,
+
+  // Live Activity Types
+  LiveActivityCTAButton as LiveActivityCTAButtonType,
 } from '@seenn/types';
 
 // ============================================
@@ -80,11 +83,33 @@ export interface ProgressParams {
   metadata?: Record<string, unknown>;
 }
 
+/** CTA button for Live Activity completion */
+export interface LiveActivityCTAButton {
+  /** Button text */
+  text: string;
+  /** Deep link URL to open when tapped */
+  deepLink: string;
+  /** Button style preset */
+  style?: 'primary' | 'secondary' | 'outline';
+  /** Custom background color (hex) */
+  backgroundColor?: string;
+  /** Custom text color (hex) */
+  textColor?: string;
+}
+
+/** Live Activity options for job completion */
+export interface LiveActivityOptions {
+  /** CTA button to show on completion */
+  ctaButton?: LiveActivityCTAButton;
+}
+
 export interface CompleteParams {
   /** Result data (max 100KB) */
   result?: JobResult;
   /** Optional completion message */
   message?: string;
+  /** Live Activity customization (iOS) */
+  liveActivity?: LiveActivityOptions;
 }
 
 export interface FailParams {

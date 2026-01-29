@@ -4,7 +4,7 @@ export { SeennClient } from './client.js';
 export type { SeennConfig } from './client.js';
 
 export { Job } from './job.js';
-export type { JobStatus, JobData, ProgressOptions, CompleteOptions, FailOptions } from './job.js';
+export type { JobStatus, JobData, ProgressOptions, CompleteOptions, FailOptions, LiveActivityCTAButton, LiveActivityOptions } from './job.js';
 
 export type {
   StartJobParams,
