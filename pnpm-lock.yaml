@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@seenn/types':
-        specifier: 0.1.0
-        version: 0.1.0
+        specifier: ^0.3.0
+        version: 0.3.0
       ulid:
         specifier: ^2.3.0
         version: 2.4.0
@@ -293,8 +293,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@seenn/types@0.1.0':
-    resolution: {integrity: sha512-6+mgX3DcpNA8TbzbgrUhyuclaFLUtU0oWGeuXbsKro9/jb2QyeSZ38AkdSQY6uz5+4S2hSy9yJslLOwJsTjrug==}
+  '@seenn/types@0.3.0':
+    resolution: {integrity: sha512-3ct6IuejcVlRbvcFpVIgmOu4YZcZ/tEhc2wmXYyAP22DYTkvdar+7uLYJTsyoCeu2yLBoQ8ANiKaI29bGJ6v8w==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -670,7 +670,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.56.0':
     optional: true
 
-  '@seenn/types@0.1.0': {}
+  '@seenn/types@0.3.0': {}
 
   '@types/estree@1.0.8': {}
 
