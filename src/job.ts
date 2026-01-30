@@ -43,12 +43,48 @@ export interface JobData {
   childProgressMode?: ChildProgressMode;
 }
 
+/** Alert push notification options */
+export interface AlertPushOptions {
+  /** Notification title */
+  title: string;
+  /** Notification body */
+  body: string;
+  /** Sound name (default: 'default') */
+  sound?: string;
+  /** Badge number */
+  badge?: number;
+}
+
+/** Rich push notification options (TikTok-style) */
+export interface RichPushOptions {
+  /** Sender name for messaging-style notification */
+  senderName: string;
+  /** Sender avatar URL for notification image */
+  senderAvatar?: string;
+  /** Mark as Time Sensitive (iOS 15+) */
+  timeSensitive?: boolean;
+}
+
+/** Push notification options for job updates */
+export interface PushOptions {
+  /** Send Live Activity update (default: true) */
+  liveActivity?: boolean;
+  /** Send silent push for background sync (default: true) */
+  silent?: boolean;
+  /** Alert push notification */
+  alert?: AlertPushOptions;
+  /** Rich push notification (TikTok-style) */
+  richPush?: RichPushOptions;
+}
+
 export interface ProgressOptions {
   message?: string;
   queue?: QueueInfo;
   stage?: StageInfo;
   estimatedCompletionAt?: string;
   metadata?: Record<string, unknown>;
+  /** Push notification options */
+  push?: PushOptions;
 }
 
 /** CTA button configuration for Live Activity completion */
@@ -76,11 +112,15 @@ export interface CompleteOptions {
   message?: string;
   /** Live Activity customization (iOS) */
   liveActivity?: LiveActivityOptions;
+  /** Push notification options */
+  push?: PushOptions;
 }
 
 export interface FailOptions {
   error: JobError;
   retryable?: boolean;
+  /** Push notification options */
+  push?: PushOptions;
 }
 
 /**
