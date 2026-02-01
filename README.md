@@ -3,6 +3,7 @@
 > **Open Source Backend SDK for Job State Transport**
 
 [![npm version](https://badge.fury.io/js/@seenn%2Fnode.svg)](https://www.npmjs.com/package/@seenn/node)
+[![npm downloads](https://img.shields.io/npm/dw/@seenn/node.svg)](https://www.npmjs.com/package/@seenn/node)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Real-time job progress tracking for AI video generation, image processing, and long-running async tasks.
